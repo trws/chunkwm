@@ -290,6 +290,66 @@ void CloseWindow(char *Unused)
     }
 }
 
+internal void
+FuckingMacOSWindowFocusThingy(macos_window *Window)
+{
+    macos_space *WSpace, *Space, **Spaces;
+    CFStringRef WDisplayRef, DisplayRef;
+    CGSSpaceID SpaceId;
+    bool SameDisplay = false;
+    bool SameSpace = false;
+    bool Success = AXLibActiveSpace(&Space);
+    ASSERT(Success);
+
+    Spaces = AXLibSpacesForWindow(Window->Id);
+    ASSERT(Spaces);
+    WSpace = *Spaces;
+    ASSERT(WSpace);
+
+    WDisplayRef = AXLibGetDisplayIdentifierFromSpace(WSpace->Id);
+    DisplayRef = AXLibGetDisplayIdentifierFromSpace(Space->Id);
+
+    SameDisplay = CFEqual(WDisplayRef, DisplayRef);
+    SameSpace = WSpace->Id == Space->Id;
+    SpaceId = Space->Id;
+
+    CFRelease(WDisplayRef);
+    CFRelease(DisplayRef);
+    AXLibDestroySpace(WSpace);
+    AXLibDestroySpace(Space);
+    free(Spaces);
+
+    if(!SameDisplay || SameSpace)
+    {
+        AXLibSetFocusedWindow(Window->Ref);
+        AXLibSetFocusedApplication(Window->Owner->PSN);
+    }
+    else
+    {
+        AXLibSpaceAddWindow(SpaceId, Window->Id);
+
+        AXLibSetFocusedApplication(Window->Owner->PSN);
+        AXLibSetFocusedWindow(Window->Ref);
+
+        AXLibSpaceRemoveWindow(SpaceId, Window->Id);
+        AXUIElementPerformAction(Window->Ref, kAXRaiseAction);
+    }
+}
+
+// NOTE(koekeishiya): DEBUG COMMAND, USED FOR TEST PURPOSES !!!
+// TODO(koekeishiya): do we want some kind of fuzzy-searchable window switcher ??
+void FocusWindowId(char *Id)
+{
+    int WindowId = 0;
+    sscanf(Id, "%d", &WindowId);
+
+    macos_window *Window = GetWindowByID(WindowId);
+    if(Window)
+    {
+        FuckingMacOSWindowFocusThingy(Window);
+    }
+}
+
 void FocusWindow(char *Direction)
 {
     bool Success;
@@ -1634,6 +1694,10 @@ bool SendWindowToDesktop(macos_window *Window, char *Op)
         ReleaseVirtualSpace(VirtualSpace);
     }
 
+    // NOTE(koekeishiya): Discovered private CGS API for moving a window between spaces.
+    // This API likely just does the add and remove that we do; the effect is identical.
+    // AXLibMoveWindowToSpace(Window->Id, DestinationSpaceId);
+
     AXLibSpaceAddWindow(DestinationSpaceId, Window->Id);
     AXLibSpaceRemoveWindow(Space->Id, Window->Id);
 
@@ -1876,8 +1940,8 @@ FocusMonitor(unsigned MonitorId)
     }
 
     Window = GetWindowByID(WindowIds[0]);
-    AXLibSetFocusedWindow(Window->Ref);
-    AXLibSetFocusedApplication(Window->Owner->PSN);
+    ASSERT(Window);
+    FuckingMacOSWindowFocusThingy(Window);
     Result = true;
 
 space_free:

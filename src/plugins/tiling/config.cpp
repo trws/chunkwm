@@ -97,6 +97,7 @@ command_func WindowCommandDispatch(char Flag)
     switch(Flag)
     {
         case 'f': return FocusWindow;           break;
+        case 'F': return FocusWindowId;         break;
         case 's': return SwapWindow;            break;
         case 'i': return UseInsertionPoint;     break;
         case 't': return ToggleWindow;          break;
@@ -121,11 +122,12 @@ ParseWindowCommand(const char *Message, command *Chain)
 
     int Option;
     bool Success = true;
-    const char *Short = "f:s:i:t:w:W:r:e:d:m:c";
+    const char *Short = "F:f:s:i:t:w:W:r:e:d:m:c";
 
     struct option Long[] =
     {
         { "focus", required_argument, NULL, 'f' },
+        { "focus-id", required_argument, NULL, 'F' },
         { "swap", required_argument, NULL, 's' },
         { "use-insertion-point", required_argument, NULL, 'i' },
         { "toggle", required_argument, NULL, 't' },
@@ -270,6 +272,13 @@ ParseWindowCommand(const char *Message, command *Chain)
                     FreeCommandChain(Chain);
                     goto End;
                 }
+            } break;
+            case 'F':
+            {
+                    // NOTE(koekeishiya): This option takes no arguments
+                    command *Entry = ConstructCommand(Option, optarg);
+                    Command->Next = Entry;
+                    Command = Entry;
             } break;
             case 'c':
             {

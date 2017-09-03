@@ -49,4 +49,8 @@ void QueryWindow(char *Op, int SockFD);
 void QueryDesktop(char *Op, int SockFD);
 void QueryMonitor(char *Op, int SockFD);
 
+// NOTE(koekeishiya): DEBUG COMMANDS
+
+void FocusWindowId(char *Id);
+
 #endif
