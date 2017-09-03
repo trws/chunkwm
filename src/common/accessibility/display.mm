@@ -13,9 +13,13 @@ extern "C" CFDictionaryRef CGSSpaceCopyValues(CGSConnectionID Connection, CGSSpa
 extern "C" CGSSpaceType CGSSpaceGetType(CGSConnectionID Connection, CGSSpaceID SpaceId);
 extern "C" CFArrayRef CGSCopyManagedDisplaySpaces(const CGSConnectionID Connection);
 extern "C" CFArrayRef CGSCopySpacesForWindows(CGSConnectionID Connection, CGSSpaceSelector Type, CFArrayRef Windows);
+extern "C" CGError CGSMoveWindowsToManagedSpace(CGSConnectionID Connection, CFArrayRef Windows, CGSSpaceID SpaceId);
 extern "C" void CGSRemoveWindowsFromSpaces(CGSConnectionID Connection, CFArrayRef Windows, CFArrayRef Spaces);
 extern "C" void CGSAddWindowsToSpaces(CGSConnectionID Connection, CFArrayRef Windows, CFArrayRef Spaces);
+extern "C" void CGSShowSpaces(CGSConnectionID Connection, CFArrayRef Spaces);
+extern "C" void CGSHideSpaces(CGSConnectionID Connection, CFArrayRef Spaces);
 
+extern "C" void CGSManagedDisplaySetCurrentSpace(CGSConnectionID Connection, CFStringRef DisplayRef, CGSSpaceID SpaceId);
 extern "C" CGSSpaceID CGSManagedDisplayGetCurrentSpace(CGSConnectionID Connection, CFStringRef DisplayRef);
 extern "C" CFStringRef CGSCopyManagedDisplayForSpace(const CGSConnectionID Connection, CGSSpaceID SpaceId);
 extern "C" CFStringRef CGSCopyManagedDisplayForWindow(const CGSConnectionID Connection, uint32_t WindowId);
@@ -488,6 +492,30 @@ void AXLibSpaceRemoveWindow(CGSSpaceID SpaceId, uint32_t WindowId)
     NSArray *NSArrayWindow = @[ @(WindowId) ];
     NSArray *NSArraySourceSpace = @[ @(SpaceId) ];
     CGSRemoveWindowsFromSpaces(CGSDefaultConnection, (__bridge CFArrayRef)NSArrayWindow, (__bridge CFArrayRef)NSArraySourceSpace);
+}
+
+void AXLibShowSpace(CGSSpaceID SpaceId)
+{
+    NSArray *NSArraySpace = @[ @(SpaceId) ];
+    CGSShowSpaces(CGSDefaultConnection, (__bridge CFArrayRef)NSArraySpace);
+}
+
+void AXLibHideSpace(CGSSpaceID SpaceId)
+{
+    NSArray *NSArraySpace = @[ @(SpaceId) ];
+    CGSHideSpaces(CGSDefaultConnection, (__bridge CFArrayRef)NSArraySpace);
+}
+
+void AXLibSetSpace(CGSSpaceID SpaceId)
+{
+    CFStringRef DisplayId = AXLibGetDisplayIdentifierFromSpace(SpaceId);
+    CGSManagedDisplaySetCurrentSpace(CGSDefaultConnection, DisplayId, SpaceId);
+}
+
+void AXLibMoveWindowToSpace(uint32_t WindowId, CGSSpaceID SpaceId)
+{
+    NSArray *NSArrayWindow = @[ @(WindowId) ];
+    CGSMoveWindowsToManagedSpace(CGSDefaultConnection, (__bridge CFArrayRef)NSArrayWindow, SpaceId);
 }
 
 /* NOTE(koekeishiya): Returns a list of macos_space * structs that show this window.
