@@ -1580,13 +1580,13 @@ void SendWindowToMonitor(char *Op)
         goto space_free;
     }
 
-    if (DestinationMonitor == SourceMonitor) {
-        // NOTE(koekeishiya): Convert 0-indexed back to 1-index when printng error to user.
-        c_log(C_LOG_LEVEL_WARN,
-              "invalid destination monitor specified, source monitor and destination '%d' are the same!\n",
-              DestinationMonitor + 1);
-        goto space_free;
-    }
+    // if (DestinationMonitor == SourceMonitor) {
+    //     // NOTE(koekeishiya): Convert 0-indexed back to 1-index when printng error to user.
+    //     c_log(C_LOG_LEVEL_WARN,
+    //           "invalid destination monitor specified, source monitor and destination '%d' are the same!\n",
+    //           DestinationMonitor + 1);
+    //     goto space_free;
+    // }
 
     DestinationMonitorRef = AXLibGetDisplayIdentifierFromArrangement(DestinationMonitor);
     if (!DestinationMonitorRef) {
@@ -1731,12 +1731,12 @@ void FocusMonitor(char *Op)
         goto space_free;
     }
 
-    if (DestinationMonitor == SourceMonitor) {
-        c_log(C_LOG_LEVEL_WARN,
-              "invalid destination monitor specified, source monitor and destination '%d' are the same!\n",
-              DestinationMonitor + 1);
-        goto space_free;
-    }
+    // if (DestinationMonitor == SourceMonitor) {
+    //     c_log(C_LOG_LEVEL_WARN,
+    //           "invalid destination monitor specified, source monitor and destination '%d' are the same!\n",
+    //           DestinationMonitor + 1);
+    //     goto space_free;
+    // }
 
     switch (Operation) {
     case -1: {
